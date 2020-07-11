@@ -1,0 +1,20 @@
+- name: "Debug"
+  debug:
+    msg: "Starting common install"
+
+- name: "Update apt"
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: "Install required packages"
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - python-minimal
+      - curl
+      - wget
+      - python-pip
+      - python3-pip

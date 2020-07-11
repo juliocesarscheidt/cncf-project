@@ -1,0 +1,11 @@
+ansible all -m ping
+ansible all -m shell -a "uptime"
+
+ansible-playbook registry-playbook.yml
+ansible-playbook registry-playbook.yml -v
+
+# ansible config precedence
+ANSIBLE_CONFIG (environment variable if set)
+ansible.cfg (in the current directory)
+~/.ansible.cfg (in the home directory)
+/etc/ansible/ansible.cfg

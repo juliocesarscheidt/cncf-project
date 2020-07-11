@@ -1,0 +1,56 @@
+- name: "Debug"
+  debug:
+    msg: "Starting install of Docker"
+
+- name: "Install docker module with pip"
+  pip:
+    name:
+      - docker
+
+- name: "Remove swap file"
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: "Disable swap"
+  command: swapoff -a
+
+- name: "Download docker install script file"
+  get_url:
+    url: https://get.docker.com
+    dest: /tmp/get-docker.sh
+    mode: '+x'
+
+- name: "Run docker install script file"
+  shell: "bash /tmp/get-docker.sh"
+
+- name: "Remove docker install script file"
+  file:
+    path: /tmp/get-docker.sh
+    state: absent
+
+- name: "Reload systemd"
+  # systemctl daemon-reload
+  systemd: daemon_reload=yes
+
+- name: "Start and enable Docker service"
+  # systemctl start docker
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - docker
+
+- name: "Download docker-compose file"
+  get_url:
+    url: https://github.com/docker/compose/releases/download/1.26.2/docker-compose-Linux-x86_64
+    dest: /usr/bin/docker-compose
+    mode: '+x'
+
+# currently is only possible to install until version 1.17.1 of docker-compose here
+# - name: "Install docker-compose"
+#   apt:
+#     name: "{{ packages }}"
+#     state: present
+#   vars:
+#     packages:
+#       - docker-compose

@@ -1,0 +1,17 @@
+all:
+  vars:
+    ansible_ssh_user: root
+    cert_domain_name: registry.ondo.blackdevs.com.br
+    cert_admin_email: julio@blackdevs.com.br
+    harbor_admin: 3kjDqy7TDs6iHr6IL # TODO: change this random password and remove from here
+  children:
+    registry:
+      hosts:
+        registry.ondo.blackdevs.com.br
+
+# docker login -u admin -p $HARBOR_PASSWORD registry.ondo.blackdevs.com.br
+# echo "$HARBOR_PASSWORD" | docker login -u "admin" --password-stdin registry.ondo.blackdevs.com.br
+
+# PROJECT_NAME=test
+# docker tag SOURCE_IMAGE[:TAG] registry.ondo.blackdevs.com.br/${PROJECT_NAME}/IMAGE[:TAG]
+# docker push registry.ondo.blackdevs.com.br/${PROJECT_NAME}/IMAGE[:TAG]
