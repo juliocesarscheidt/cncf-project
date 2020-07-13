@@ -1,0 +1,4 @@
+- include_tasks: "setup.yml"
+# CNI
+- include_tasks: "flannel.yml"
+- include_tasks: "token.yml"

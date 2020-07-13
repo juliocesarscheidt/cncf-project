@@ -1,4 +1,4 @@
-# CNCF project
+# CNCF project 🐳🚀
 
 > This is a project to provide a Kubernetes infrastucture using Terraform and Ansible, also a Harbor registry for Docker images.
 > It will be used CNCF (Cloud Native Computing Foundation) projects the whole implementation of this project.

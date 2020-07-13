@@ -7,6 +7,10 @@
     name: "python-certbot-nginx"
     state: present
 
+- name: "Stop Nginx"
+  # systemctl stop nginx
+  service: name=nginx state=stopped
+
 - name: "Check for existing of certificate"
   stat:
     path: /etc/letsencrypt/live/{{ cert_domain_name }}/cert.pem
@@ -30,7 +34,7 @@
     var: service_status
 
 - name: "Generate certificate for {{ cert_domain_name }}"
-  shell: "certbot certonly --standalone --noninteractive --agree-tos --email {{ cert_admin_email }} -d {{ cert_domain_name }}"
+  shell: certbot certonly --standalone --noninteractive --agree-tos --email {{ cert_admin_email }} -d {{ cert_domain_name }}
   when:
     - cert_exists.stat.exists == false
-    - service_status.state == "stopped"
+    - service_status.failed == false

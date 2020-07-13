@@ -12,7 +12,7 @@ resource "aws_route53_record" "aws-registry-ns-record" {
     "ns1.digitalocean.com.",
   ]
 
-  depends_on = [digitalocean_droplet.do-instance]
+  depends_on = [digitalocean_droplet.do-registry-instance]
 }
 
 # Digital Ocean records
@@ -26,7 +26,7 @@ resource "digitalocean_record" "do-registry-a-record" {
   domain = digitalocean_domain.do-registry-domain.name
   type   = "A"
   name   = "@"
-  value  = digitalocean_droplet.do-instance.ipv4_address
+  value  = digitalocean_droplet.do-registry-instance.ipv4_address
 
   depends_on = [digitalocean_domain.do-registry-domain]
 }

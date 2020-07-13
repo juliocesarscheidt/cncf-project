@@ -28,6 +28,18 @@ variable "do_size" {
   default = "s-2vcpu-4gb"
 }
 
+variable "do_kubernetes_master_count" {
+  type        = number
+  description = "Digital Ocean number of Kubernetes master instances"
+  default     = 1
+}
+
+variable "do_kubernetes_node_count" {
+  type        = number
+  description = "Digital Ocean number of Kubernetes node instances"
+  default     = 2
+}
+
 # AWS variables
 variable "aws_access_key" {
   type        = string

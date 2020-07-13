@@ -18,3 +18,5 @@
       - wget
       - python-pip
       - python3-pip
+      - apt-transport-https
+      - netcat

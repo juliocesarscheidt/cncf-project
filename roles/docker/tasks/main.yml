@@ -23,7 +23,7 @@
     mode: '+x'
 
 - name: "Run docker install script file"
-  shell: "bash /tmp/get-docker.sh"
+  shell: bash /tmp/get-docker.sh
 
 - name: "Remove docker install script file"
   file:

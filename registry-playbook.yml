@@ -1,18 +1,10 @@
 - hosts: registry
-  gather_facts: False
+  gather_facts: True
   remote_user: root
   become: yes
-  # become_user: root
-  # sudo: yes
-
-  # pre_tasks:
-    # - raw: apt update -yqq && apt install -yqq python-minimal
-
+  become_user: root
   roles:
     - { role: common }
     - { role: docker }
     - { role: letsencrypt }
-    - { role: harbor }
-
-  # post_tasks:
-  #   - shell: apt update -yqq
+    - { role: registry }
