@@ -12,6 +12,10 @@
   args:
     creates: /tmp/harbor
 
+- name: "Debug password HARBOR_ADMIN from env"
+  debug:
+    msg: "{{ lookup('env', 'HARBOR_ADMIN') }}"
+
 - name: "Put Harbor template"
   template:
     src: harbor.yml.j2

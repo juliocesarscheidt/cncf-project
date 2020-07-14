@@ -1,0 +1,13 @@
+- name: "Put Contour template"
+  template:
+    src: contour.yml.j2
+    dest: /tmp/contour.yml
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Apply Contour"
+  shell: kubectl apply -f /tmp/contour.yml >> contour_apply.log
+  args:
+    chdir: $HOME
+    creates: contour_apply.log

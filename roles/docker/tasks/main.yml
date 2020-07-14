@@ -19,15 +19,15 @@
 - name: "Download docker install script file"
   get_url:
     url: https://get.docker.com
-    dest: /tmp/get-docker.sh
+    dest: /tmp/docker-install.sh
     mode: '+x'
 
 - name: "Run docker install script file"
-  shell: bash /tmp/get-docker.sh
+  shell: bash /tmp/docker-install.sh
 
 - name: "Remove docker install script file"
   file:
-    path: /tmp/get-docker.sh
+    path: /tmp/docker-install.sh
     state: absent
 
 - name: "Reload systemd"

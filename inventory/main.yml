@@ -3,18 +3,18 @@ all:
     ansible_ssh_user: root
     cert_domain_name: registry.ondo.blackdevs.com.br
     cert_admin_email: julio@blackdevs.com.br
-    # TODO: change this random password and remove from here
-    harbor_admin: 3kjDqy7TDs6iHr6IL
   children:
     kubernetes:
       children:
         masters:
+          vars:
+            linkerd_url: linkerd.ondo.blackdevs.com.br
           hosts:
-            0.0.0.0
+            0.0.0.0:
         nodes:
           hosts:
-            0.0.0.0
-            0.0.0.0
+            0.0.0.0:
+            0.0.0.0:
     registry:
       hosts:
         registry.ondo.blackdevs.com.br

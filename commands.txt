@@ -2,6 +2,9 @@
 ansible all -m ping
 ansible all -m shell -a "uptime"
 
+# password for admin user on Harbor
+export HARBOR_ADMIN=3kjDqy7TDs6iHr6IL
+
 ansible-playbook registry-playbook.yml
 ansible-playbook registry-playbook.yml -v
 

@@ -9,7 +9,8 @@ https:
   private_key: /etc/letsencrypt/live/{{ cert_domain_name }}/privkey.pem
   external_url: https://{{ cert_domain_name }}
 
-harbor_admin_password: {{ harbor_admin }}
+# Get admin password from environment
+harbor_admin_password: {{ lookup('env', 'HARBOR_ADMIN') }}
 
 # Harbor DB configuration
 database:

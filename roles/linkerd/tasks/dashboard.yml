@@ -1,0 +1,14 @@
+
+- name: "Put Linkerd dashboard template"
+  template:
+    src: dashboard.yml.j2
+    dest: /tmp/linkerd-dashboard.yml
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Apply Linkerd"
+  shell: kubectl apply -f /tmp/linkerd-dashboard.yml >> linkerd_dashboard_apply.log
+  args:
+    chdir: $HOME
+    creates: linkerd_dashboard_apply.log

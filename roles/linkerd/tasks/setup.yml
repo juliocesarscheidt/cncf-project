@@ -1,0 +1,36 @@
+- name: "Download Linkerd install script file"
+  get_url:
+    url: https://run.linkerd.io/install
+    dest: /tmp/linkerd-install.sh
+    mode: '+x'
+
+- name: "Run Linkerd install script file"
+  shell: bash /tmp/linkerd-install.sh
+
+- name: "Remove linkerd install script file"
+  file:
+    path: /tmp/linkerd-install.sh
+    state: absent
+
+- name: "Add Linkerd symbolic link"
+  file:
+    src: $HOME/.linkerd2/bin/linkerd
+    dest: /usr/local/bin/linkerd
+    state: link
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Put Linkerd template"
+  template:
+    src: linkerd.yml.j2
+    dest: /tmp/linkerd.yml
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Apply Linkerd"
+  shell: kubectl apply -f /tmp/linkerd.yml >> linkerd_apply.log
+  args:
+    chdir: $HOME
+    creates: linkerd_apply.log

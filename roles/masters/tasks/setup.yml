@@ -4,7 +4,7 @@
     chdir: $HOME
 
 - name: "Initialize Kubernetes cluster"
-  shell: kubeadm init --pod-network-cidr 10.244.0.0/16 --authorization-mode=RBAC --ignore-preflight-errors=NumCPU >> cluster_init.log
+  shell: kubeadm init --pod-network-cidr 10.244.0.0/16 --ignore-preflight-errors=NumCPU >> cluster_init.log
   args:
     chdir: $HOME
     creates: cluster_init.log
@@ -34,6 +34,7 @@
 - name: "Put Kubelet template"
   template:
     src: kubelet-config.yml.j2
+    # note, this should be .yaml not .yml
     dest: /var/lib/kubelet/config.yaml
     owner: root
     group: root
