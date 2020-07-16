@@ -6,20 +6,16 @@
 ## Instruction
 
 ```bash
-# Harbor admin password
-export HARBOR_ADMIN=SOME_PASSWORD
-# terraform to deploy the required machines on cloud
-pushd terraform && bash deploy.sh && popd
-# ansible to install and configure K8S cluster on the machines
-ansible-playbook registry-playbook.yml
-ansible-playbook kubernetes-playbook.yml
+# deploy
+chmod +x deploy.sh && \
+    bash deploy.sh
 ```
 
 ## Linkerd
 
 > Linkerd Dashboard
 
-![Architecture](linkerd.png)
+![Linkerd](https://raw.githubusercontent.com/julio-cesar-development/cncf-project/master/linkerd.png)
 
 ## Docs
 

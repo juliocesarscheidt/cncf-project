@@ -1,0 +1,27 @@
+all:
+  vars:
+    ansible_ssh_user: root
+    cert_domain_name: registry.ondo.${FQDN}
+    cert_admin_email: email@${FQDN}
+  children:
+    kubernetes:
+      children:
+        masters:
+          vars:
+            linkerd_url: linkerd.ondo.${FQDN}
+          hosts:
+            0.0.0.0:
+        nodes:
+          hosts:
+            0.0.0.0:
+            0.0.0.0:
+    registry:
+      hosts:
+        registry.ondo.${FQDN}
+
+# docker login -u admin -p $HARBOR_PASSWORD registry.ondo.${FQDN}
+# echo "$HARBOR_PASSWORD" | docker login -u "admin" --password-stdin registry.ondo.${FQDN}
+
+# PROJECT_NAME=test
+# docker tag SOURCE_IMAGE[:TAG] registry.ondo.${FQDN}/${PROJECT_NAME}/IMAGE[:TAG]
+# docker push registry.ondo.${FQDN}/${PROJECT_NAME}/IMAGE[:TAG]
