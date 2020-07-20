@@ -1,4 +1,3 @@
-
 - name: "Put Linkerd dashboard template"
   template:
     src: dashboard.yml.j2

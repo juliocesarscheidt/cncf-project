@@ -32,5 +32,5 @@
 - name: "Install Harbor with Clair"
   shell: "/tmp/harbor/install.sh --with-clair"
   args:
-    chdir: /tmp/
-    creates: harbor-install.log
+    chdir: $HOME
+    creates: harbor_install.log

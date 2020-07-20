@@ -1,0 +1,46 @@
+- name: "Put Cert Manager template"
+  template:
+    src: cert-manager.yml.j2
+    dest: /tmp/cert-manager.yml
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Apply Cert Manager"
+  shell: kubectl apply -f /tmp/cert-manager.yml >> cert_manager_apply.log
+  args:
+    chdir: $HOME
+    creates: cert_manager_apply.log
+
+# issuer staging
+- name: "Put Cert Manager issuer staging template"
+  template:
+    src: issuer-staging.yml.j2
+    dest: /tmp/issuer-staging.yml
+    owner: root
+    group: root
+    mode: '0777'
+
+# issuer production
+- name: "Put Cert Manager issuer production template"
+  template:
+    src: issuer-production.yml.j2
+    dest: /tmp/issuer-production.yml
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Wait some time for cert-manager pods to be up and running"
+  shell: sleep 30
+
+- name: "Apply Cert Manager issuer staging"
+  shell: kubectl apply -f /tmp/issuer-staging.yml >> cert_manager_issuer_staging_apply.log
+  args:
+    chdir: $HOME
+    creates: cert_manager_issuer_staging_apply.log
+
+- name: "Apply Cert Manager issuer production"
+  shell: kubectl apply -f /tmp/issuer-production.yml >> cert_manager_issuer_production_apply.log
+  args:
+    chdir: $HOME
+    creates: cert_manager_issuer_production_apply.log

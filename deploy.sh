@@ -8,7 +8,11 @@ pushd ./terraform/
 chmod +x ./deploy.sh && \
     bash ./deploy.sh
 
-export FQDN="blackdevs.com.br"
+export FQDN="${FQDN:-blackdevs.com.br}"
+
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-"sa-east-1"}"
+AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:?"[ERROR] Missing AWS Access Key"}"
+AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:?"[ERROR] Missing AWS Secret Key"}"
 
 # generate the inventory with instances from Terraform scripts
 cat <<EOF | tee ../inventory/main.yml
@@ -38,10 +42,11 @@ EOF
 export HARBOR_ADMIN="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n1)"
 echo "HARBOR_ADMIN :: ${HARBOR_ADMIN}"
 
-popd
+# Wait some time
+echo "Waiting for instances to be up and running"
+sleep 30
 
-# test the SSH connection
-ansible all -m ping
+popd
 
 # run the playbooks
 ansible-playbook registry-playbook.yml

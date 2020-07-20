@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: blackdevs
+  annotations:
+    linkerd.io/inject: enabled
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: todoapp-secrets
+  namespace: blackdevs
+
+type: Opaque
+data:
+  NODE_ENV: ZGV2ZWxvcG1lbnQ=
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todoapp-deployment
+  namespace: blackdevs
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      component: todoapp
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 3
+
+  template:
+    metadata:
+      labels:
+        component: todoapp
+      annotations:
+        linkerd.io/inject: enabled
+
+    spec:
+      containers:
+        - name: todoapp-deployment
+          image: juliocesarmidia/todo-vue:v2.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: todoapp-port
+              containerPort: 80
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: todoapp-port
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: todoapp-port
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: todoapp-secrets
+                  key: NODE_ENV
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "150m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: todoapp-service
+  namespace: blackdevs
+
+spec:
+  type: ClusterIP
+  selector:
+    component: todoapp
+
+  ports:
+  - port: 80
+    targetPort: todoapp-port
+    protocol: TCP
+
+---
+
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: todoapp-certificate
+  namespace: blackdevs
+
+spec:
+  secretName: todoapp-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  dnsNames:
+    - 'todoapp.ondo.blackdevs.com.br'
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: todoapp-ingress
+  namespace: blackdevs
+  annotations:
+    kubernetes.io/ingress.class: contour
+    ingress.kubernetes.io/force-ssl-redirect: "false"
+
+spec:
+  tls:
+  - hosts:
+    - todoapp.ondo.blackdevs.com.br
+    secretName: todoapp-tls
+
+  rules:
+  - http:
+      paths:
+        - backend:
+            serviceName: todoapp-service
+            servicePort: 80
+
+---
+
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: todoapp
+  namespace: blackdevs
+
+spec:
+  virtualhost:
+    fqdn: todoapp.ondo.blackdevs.com.br
+    tls:
+      secretName: todoapp-tls
+
+  routes:
+  - services:
+    - name: todoapp-service
+      port: 80

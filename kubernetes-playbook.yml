@@ -17,6 +17,7 @@
     - { role: masters }
     - { role: contour }
     - { role: linkerd }
+    - { role: helm }
 
 - hosts: nodes
   gather_facts: True
@@ -25,3 +26,12 @@
   become_user: root
   roles:
     - { role: nodes }
+
+# cert-manager needs nodes to be ingressed
+- hosts: masters
+  gather_facts: True
+  remote_user: root
+  become: yes
+  become_user: root
+  roles:
+    - { role: cert-manager }

@@ -33,8 +33,27 @@
   debug:
     var: service_status
 
-- name: "Generate certificate for {{ cert_domain_name }}"
-  shell: certbot certonly --standalone --noninteractive --agree-tos --email {{ cert_admin_email }} -d {{ cert_domain_name }}
+# generate a new certificate with LetsEncrypt
+# - name: "Generate certificate for {{ cert_domain_name }}"
+#   shell: certbot certonly --standalone --noninteractive --agree-tos --email {{ cert_admin_email }} -d {{ cert_domain_name }}
+#   when:
+#     - cert_exists.stat.exists == false
+#     - service_status.failed == false
+
+# get existing certificates from S3
+- name: "Put S3 docker template"
+  template:
+    src: s3-docker.sh
+    dest: /tmp/s3-docker.sh
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Apply S3 docker"
+  shell: bash /tmp/s3-docker.sh
+  args:
+    chdir: $HOME
+    creates: s3_docker_run.log
   when:
     - cert_exists.stat.exists == false
     - service_status.failed == false

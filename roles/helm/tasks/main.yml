@@ -1,0 +1,16 @@
+- name: "Download Helm install script"
+  get_url:
+    url: https://git.io/get_helm.sh
+    dest: /tmp/get_helm.sh
+    mode: '0744'
+
+- name: "Install Helm"
+  shell: "/tmp/get_helm.sh"
+  args:
+    chdir: $HOME
+    creates: helm_install.log
+
+- name: "Remove Helm install script"
+  file:
+    path: /tmp/get_helm.sh
+    state: absent
