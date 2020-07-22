@@ -11,13 +11,14 @@ chmod +x ./deploy.sh && \
 export FQDN="${FQDN:-blackdevs.com.br}"
 
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-"sa-east-1"}"
-AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:?"[ERROR] Missing AWS Access Key"}"
-AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:?"[ERROR] Missing AWS Secret Key"}"
+export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:?"[ERROR] Missing AWS Access Key"}"
+export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:?"[ERROR] Missing AWS Secret Key"}"
 
 # generate the inventory with instances from Terraform scripts
 cat <<EOF | tee ../inventory/main.yml
 all:
   vars:
+    fqdn: ${FQDN}
     ansible_ssh_user: root
     cert_domain_name: registry.ondo.${FQDN}
     cert_admin_email: julio@${FQDN}
@@ -26,7 +27,7 @@ all:
       children:
         masters:
           vars:
-            linkerd_url: linkerd.ondo.${FQDN}
+            linkerd_fqdn: linkerd.ondo.${FQDN}
           hosts:
             $(terraform output do-master-instance-ipv4-address-0):
         nodes:
@@ -36,18 +37,24 @@ all:
     registry:
       hosts:
         registry.ondo.${FQDN}
+    front-proxy:
+      hosts:
+        k8s.ondo.${FQDN}
 EOF
 
-# generate some password for Harbor
-export HARBOR_ADMIN="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n1)"
+# generate some password for Harbor if not set
+export RANDOM_PASS="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n1)"
+export HARBOR_ADMIN=${HARBOR_ADMIN:-$RANDOM_PASS}
 echo "HARBOR_ADMIN :: ${HARBOR_ADMIN}"
 
 # Wait some time
 echo "Waiting for instances to be up and running"
-sleep 30
+sleep 45
 
 popd
 
 # run the playbooks
 ansible-playbook registry-playbook.yml
 ansible-playbook kubernetes-playbook.yml
+ansible-playbook front-proxy-playbook.yml
+ansible-playbook application-playbook.yml

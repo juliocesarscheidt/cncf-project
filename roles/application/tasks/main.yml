@@ -1,0 +1,13 @@
+- name: "Put Application template"
+  template:
+    src: application.yaml.j2
+    dest: /tmp/application.yaml
+    owner: root
+    group: root
+    mode: '0777'
+
+- name: "Apply Application"
+  shell: kubectl apply -f /tmp/application.yaml >> application_apply.log
+  args:
+    chdir: $HOME
+    creates: application_apply.log

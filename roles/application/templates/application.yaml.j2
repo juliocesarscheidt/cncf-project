@@ -1,0 +1,174 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: todoapp
+  annotations:
+    linkerd.io/inject: enabled
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todoapp-deployment
+  namespace: todoapp
+
+spec:
+  selector:
+    matchLabels:
+      component: todoapp
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 3
+
+  template:
+    metadata:
+      labels:
+        component: todoapp
+      annotations:
+        linkerd.io/inject: enabled
+
+    spec:
+      containers:
+        - name: todoapp-deployment
+          image: juliocesarmidia/todo-vue:v2.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: todoapp-port
+              containerPort: 80
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: todoapp-port
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: todoapp-port
+            initialDelaySeconds: 10
+            timeoutSeconds: 30
+
+          env:
+            - name: NODE_ENV
+              value: "staging"
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "150m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: todoapp-service
+  namespace: todoapp
+
+spec:
+  type: ClusterIP
+  selector:
+    component: todoapp
+
+  ports:
+  - port: 80
+    targetPort: todoapp-port
+    protocol: TCP
+
+---
+
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: todoapp-hpa
+  namespace: todoapp
+
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: todoapp-deployment
+
+  minReplicas: 1
+  maxReplicas: 5
+
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+
+---
+
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: todoapp-certificate
+  namespace: todoapp
+
+spec:
+  secretName: todoapp-tls
+  issuerRef:
+    name: letsencrypt-staging
+    # name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - 'todoapp.ondo.{{ fqdn }}'
+
+---
+
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: todoapp-httpproxy
+  namespace: todoapp
+
+spec:
+  virtualhost:
+    fqdn: todoapp.ondo.{{ fqdn }}
+    tls:
+      secretName: todoapp-tls
+
+  routes:
+  - services:
+    - name: todoapp-service
+      port: 80
+    loadBalancerStrategy:
+      strategy: WeightedLeastRequest
+
+---
+
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: todoapp-httpproxy-cname
+  namespace: todoapp
+
+spec:
+  virtualhost:
+    fqdn: www.todoapp.ondo.{{ fqdn }}
+    tls:
+      secretName: todoapp-tls
+
+  routes:
+  - services:
+    - name: todoapp-service
+      port: 80
+    loadBalancerStrategy:
+      strategy: WeightedLeastRequest
+    requestHeadersPolicy:
+      set:
+      - name: Host
+        value: todoapp.ondo.{{ fqdn }}

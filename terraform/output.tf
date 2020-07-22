@@ -3,9 +3,9 @@ output "do-registry-instance-ipv4-address" {
   description = "Registry instance IPv4 address"
 }
 
-output "do-registry-domain-name" {
-  value       = digitalocean_domain.do-registry-domain.name
-  description = "Registry domain name"
+output "do-front-proxy-instance-ipv4-address" {
+  value       = digitalocean_droplet.do-front-proxy-instance.ipv4_address
+  description = "Front Proxy instance IPv4 address"
 }
 
 output "do-master-instance-ipv4-address-0" {

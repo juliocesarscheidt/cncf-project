@@ -1,21 +1,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: blackdevs
+  name: todoapp
   annotations:
     linkerd.io/inject: enabled
-
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: todoapp-secrets
-  namespace: blackdevs
-
-type: Opaque
-data:
-  NODE_ENV: ZGV2ZWxvcG1lbnQ=
 
 ---
 
@@ -23,11 +11,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todoapp-deployment
-  namespace: blackdevs
+  namespace: todoapp
 
 spec:
-  replicas: 1
-
   selector:
     matchLabels:
       component: todoapp
@@ -69,10 +55,7 @@ spec:
 
           env:
             - name: NODE_ENV
-              valueFrom:
-                secretKeyRef:
-                  name: todoapp-secrets
-                  key: NODE_ENV
+              value: "staging"
 
           resources:
             requests:
@@ -90,7 +73,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: todoapp-service
-  namespace: blackdevs
+  namespace: todoapp
 
 spec:
   type: ClusterIP
@@ -104,51 +87,53 @@ spec:
 
 ---
 
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: todoapp-hpa
+  namespace: todoapp
+
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: todoapp-deployment
+
+  minReplicas: 1
+  maxReplicas: 5
+
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+
+---
+
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: todoapp-certificate
-  namespace: blackdevs
+  namespace: todoapp
 
 spec:
   secretName: todoapp-tls
   issuerRef:
     name: letsencrypt-staging
+    # name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
     - 'todoapp.ondo.blackdevs.com.br'
 
 ---
 
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: todoapp-ingress
-  namespace: blackdevs
-  annotations:
-    kubernetes.io/ingress.class: contour
-    ingress.kubernetes.io/force-ssl-redirect: "false"
-
-spec:
-  tls:
-  - hosts:
-    - todoapp.ondo.blackdevs.com.br
-    secretName: todoapp-tls
-
-  rules:
-  - http:
-      paths:
-        - backend:
-            serviceName: todoapp-service
-            servicePort: 80
-
----
-
 apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
-  name: todoapp
-  namespace: blackdevs
+  name: todoapp-httpproxy
+  namespace: todoapp
 
 spec:
   virtualhost:
@@ -160,3 +145,55 @@ spec:
   - services:
     - name: todoapp-service
       port: 80
+    loadBalancerStrategy:
+      strategy: WeightedLeastRequest
+
+---
+
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: todoapp-httpproxy-cname
+  namespace: todoapp
+
+spec:
+  virtualhost:
+    fqdn: www.todoapp.ondo.blackdevs.com.br
+    tls:
+      secretName: todoapp-tls
+
+  routes:
+  - services:
+    - name: todoapp-service
+      port: 80
+    loadBalancerStrategy:
+      strategy: WeightedLeastRequest
+    requestHeadersPolicy:
+      set:
+      - name: Host
+        value: todoapp.ondo.blackdevs.com.br
+
+---
+
+# ingress was replaced here by HTTPProxy
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#   name: todoapp-ingress
+#   namespace: todoapp
+#   annotations:
+#     kubernetes.io/ingress.class: contour
+#     ingress.kubernetes.io/force-ssl-redirect: "false"
+
+# spec:
+#   tls:
+#   - hosts:
+#     - todoapp.ondo.blackdevs.com.br
+#     secretName: todoapp-tls
+
+#   rules:
+#   - http:
+#       paths:
+#         - backend:
+#             serviceName: todoapp-service
+#             servicePort: 80

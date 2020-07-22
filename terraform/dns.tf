@@ -1,4 +1,22 @@
 # AWS records
+
+# k8s front-proxy
+resource "aws_route53_record" "aws-front-proxy-ns-record" {
+  allow_overwrite = false
+  name            = "k8s.ondo.${var.domain}"
+  ttl             = 30
+  type            = "NS"
+  zone_id         = var.aws_hosted_zone_id
+
+  records = [
+    "ns3.digitalocean.com.",
+    "ns2.digitalocean.com.",
+    "ns1.digitalocean.com.",
+  ]
+
+  depends_on = [digitalocean_droplet.do-registry-instance]
+}
+
 # registry
 resource "aws_route53_record" "aws-registry-ns-record" {
   allow_overwrite = false
@@ -16,9 +34,10 @@ resource "aws_route53_record" "aws-registry-ns-record" {
   depends_on = [digitalocean_droplet.do-registry-instance]
 }
 
-# nodes
+# applications
+
 # linkerd
-resource "aws_route53_record" "aws-kubernetes-node-ns-record-linkerd" {
+resource "aws_route53_record" "aws-kubernetes-ns-record-linkerd" {
   allow_overwrite = false
   name            = "linkerd.ondo.${var.domain}"
   ttl             = 30
@@ -31,11 +50,11 @@ resource "aws_route53_record" "aws-kubernetes-node-ns-record-linkerd" {
     "ns1.digitalocean.com.",
   ]
 
-  depends_on = [digitalocean_droplet.do-kubernetes-node-instance]
+  depends_on = [digitalocean_droplet.do-front-proxy-instance]
 }
 
 # todoapp
-resource "aws_route53_record" "aws-kubernetes-node-ns-record-todoapp" {
+resource "aws_route53_record" "aws-kubernetes-ns-record-todoapp" {
   allow_overwrite = false
   name            = "todoapp.ondo.${var.domain}"
   ttl             = 30
@@ -48,10 +67,27 @@ resource "aws_route53_record" "aws-kubernetes-node-ns-record-todoapp" {
     "ns1.digitalocean.com.",
   ]
 
-  depends_on = [digitalocean_droplet.do-kubernetes-node-instance]
+  depends_on = [digitalocean_droplet.do-front-proxy-instance]
 }
 
 # Digital Ocean records
+
+# k8s front proxy
+resource "digitalocean_domain" "do-front-proxy-domain" {
+  name = "k8s.ondo.${var.domain}"
+
+  depends_on = [aws_route53_record.aws-front-proxy-ns-record]
+}
+
+resource "digitalocean_record" "do-front-proxy-a-record" {
+  domain = digitalocean_domain.do-front-proxy-domain.name
+  type   = "A"
+  name   = "@"
+  value  = digitalocean_droplet.do-front-proxy-instance.ipv4_address
+
+  depends_on = [digitalocean_domain.do-front-proxy-domain]
+}
+
 # registry
 resource "digitalocean_domain" "do-registry-domain" {
   name = "registry.ondo.${var.domain}"
@@ -68,39 +104,64 @@ resource "digitalocean_record" "do-registry-a-record" {
   depends_on = [digitalocean_domain.do-registry-domain]
 }
 
-# nodes
-# linkerd
-resource "digitalocean_domain" "do-kubernetes-node-domain-linkerd" {
-  name = "linkerd.ondo.${var.domain}"
+resource "digitalocean_record" "do-registry-cname-record" {
+  domain   = digitalocean_domain.do-registry-domain.name
+  type     = "CNAME"
+  name     = "www"
+  value    = "@"
 
-  depends_on = [aws_route53_record.aws-kubernetes-node-ns-record-linkerd]
+  depends_on = [digitalocean_domain.do-registry-domain]
 }
 
-resource "digitalocean_record" "do-kubernetes-node-a-record-linkerd" {
-  count = var.do_kubernetes_node_count
+# applications
+# all domains for applications redirect to front-proxy
 
-  domain = element(digitalocean_domain.do-kubernetes-node-domain-linkerd.*.name, count.index)
+# linkerd
+resource "digitalocean_domain" "do-kubernetes-domain-linkerd" {
+  name = "linkerd.ondo.${var.domain}"
+
+  depends_on = [aws_route53_record.aws-kubernetes-ns-record-linkerd]
+}
+
+resource "digitalocean_record" "do-kubernetes-a-record-linkerd" {
+  domain = digitalocean_domain.do-kubernetes-domain-linkerd.name
   type   = "A"
   name   = "@"
-  value  = element(digitalocean_droplet.do-kubernetes-node-instance.*.ipv4_address, count.index)
+  value  = digitalocean_droplet.do-front-proxy-instance.ipv4_address
 
-  depends_on = [digitalocean_domain.do-kubernetes-node-domain-linkerd]
+  depends_on = [digitalocean_domain.do-kubernetes-domain-linkerd]
+}
+
+resource "digitalocean_record" "do-kubernetes-cname-record-linkerd" {
+  domain   = digitalocean_domain.do-kubernetes-domain-linkerd.name
+  type     = "CNAME"
+  name     = "www"
+  value    = "@"
+
+  depends_on = [digitalocean_domain.do-kubernetes-domain-linkerd]
 }
 
 # todoapp
-resource "digitalocean_domain" "do-kubernetes-node-domain-todoapp" {
+resource "digitalocean_domain" "do-kubernetes-domain-todoapp" {
   name = "todoapp.ondo.${var.domain}"
 
-  depends_on = [aws_route53_record.aws-kubernetes-node-ns-record-todoapp]
+  depends_on = [aws_route53_record.aws-kubernetes-ns-record-todoapp]
 }
 
-resource "digitalocean_record" "do-kubernetes-node-a-record-todoapp" {
-  count = var.do_kubernetes_node_count
-
-  domain = element(digitalocean_domain.do-kubernetes-node-domain-todoapp.*.name, count.index)
+resource "digitalocean_record" "do-kubernetes-a-record-todoapp" {
+  domain = digitalocean_domain.do-kubernetes-domain-todoapp.name
   type   = "A"
   name   = "@"
-  value  = element(digitalocean_droplet.do-kubernetes-node-instance.*.ipv4_address, count.index)
+  value  = digitalocean_droplet.do-front-proxy-instance.ipv4_address
 
-  depends_on = [digitalocean_domain.do-kubernetes-node-domain-todoapp]
+  depends_on = [digitalocean_domain.do-kubernetes-domain-todoapp]
+}
+
+resource "digitalocean_record" "do-kubernetes-cname-record-todoapp" {
+  domain   = digitalocean_domain.do-kubernetes-domain-todoapp.name
+  type     = "CNAME"
+  name     = "www"
+  value    = "@"
+
+  depends_on = [digitalocean_domain.do-kubernetes-domain-todoapp]
 }

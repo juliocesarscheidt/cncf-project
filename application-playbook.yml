@@ -1,0 +1,7 @@
+- hosts: masters
+  gather_facts: True
+  remote_user: root
+  become: yes
+  become_user: root
+  roles:
+    - { role: application }

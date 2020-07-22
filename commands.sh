@@ -5,11 +5,13 @@ ansible all -m shell -a "uptime"
 # random password for admin user on Harbor
 export HARBOR_ADMIN=3kjDqy7TDs6iHr6IL
 
+
 ansible-playbook registry-playbook.yml
 ansible-playbook registry-playbook.yml -v
 
 ansible-playbook kubernetes-playbook.yml
 ansible-playbook kubernetes-playbook.yml -v
+
 
 # ansible config precedence
 # ANSIBLE_CONFIG (environment variable if set)
@@ -30,6 +32,20 @@ pushd ./terraform/
 ssh -i cncf_key root@$(terraform output do-registry-instance-ipv4-address)
 
 ssh -i cncf_key root@$(terraform output do-registry-instance-ipv4-address) -a "apt-get update -yqq && apt-get install -yqq python-minimal"
+
+# docker login -u admin -p $HARBOR_PASSWORD registry.ondo.${FQDN}
+# echo "$HARBOR_PASSWORD" | docker login -u "admin" --password-stdin registry.ondo.${FQDN}
+
+# PROJECT_NAME=test
+# docker tag SOURCE_IMAGE[:TAG] registry.ondo.${FQDN}/${PROJECT_NAME}/IMAGE[:TAG]
+# docker push registry.ondo.${FQDN}/${PROJECT_NAME}/IMAGE[:TAG]
+
+
+# access front-proxy
+terraform output do-front-proxy-instance-ipv4-address
+
+ssh -i cncf_key root@$(terraform output do-front-proxy-instance-ipv4-address)
+ssh -i cncf_key root@$(terraform output do-front-proxy-instance-ipv4-address) -a "journalctl --unit envoy.service"
 
 
 # get IPs from node
@@ -63,10 +79,3 @@ export KUBECONFIG=$PWD/kubeconfig
 
 # inject inject sidecars on some Kubernetes objects
 linkerd inject [FILE].yaml | kubectl apply -f -
-
-
-# benchmark
-docker run --rm --net=host \
-  jordi/ab -c 100 -n 5000 \
-  -H "Host: todoapp.ondo.blackdevs.com.br" \
-  https://todoapp.ondo.blackdevs.com.br/

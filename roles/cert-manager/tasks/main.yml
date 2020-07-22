@@ -31,7 +31,7 @@
     mode: '0777'
 
 - name: "Wait some time for cert-manager pods to be up and running"
-  shell: sleep 30
+  shell: sleep 45
 
 - name: "Apply Cert Manager issuer staging"
   shell: kubectl apply -f /tmp/issuer-staging.yml >> cert_manager_issuer_staging_apply.log

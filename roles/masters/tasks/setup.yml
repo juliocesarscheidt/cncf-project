@@ -1,10 +1,10 @@
-- name: "Pull kubeadm images"
+- name: "Pull kubeadm images from k8s.gcr.io"
   shell: kubeadm config images pull
   args:
     chdir: $HOME
 
 - name: "Initialize Kubernetes cluster"
-  shell: kubeadm init --pod-network-cidr 10.244.0.0/16 --ignore-preflight-errors=NumCPU >> cluster_init.log
+  shell: kubeadm init --pod-network-cidr 10.244.0.0/16 --service-cidr 10.96.0.0/12 --service-dns-domain cluster.local --ignore-preflight-errors=NumCPU >> cluster_init.log
   args:
     chdir: $HOME
     creates: cluster_init.log
