@@ -43,8 +43,12 @@ all:
 EOF
 
 # generate some password for Harbor if not set
-export RANDOM_PASS="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n1)"
-export HARBOR_ADMIN=${HARBOR_ADMIN:-$RANDOM_PASS}
+declare -x RANDOM_PASS
+RANDOM_PASS="$(< /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)"
+
+declare -x HARBOR_ADMIN
+HARBOR_ADMIN="${HARBOR_ADMIN:-$RANDOM_PASS}"
+
 echo "HARBOR_ADMIN :: ${HARBOR_ADMIN}"
 
 # Wait some time

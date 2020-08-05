@@ -1,0 +1,83 @@
+language: shell # minimal
+
+os:
+  - linux
+
+dist: bionic
+
+branches:
+  only:
+    - master
+    - development
+
+services:
+  - docker
+
+env:
+  # set environment
+  - SHA=$(git rev-parse --short=7 HEAD) FULL_SHA=$(git rev-parse HEAD)
+
+script:
+  - |
+    # terraform linter
+    docker container run --name tflint --rm -v "$PWD/terraform/:/data" -w /data --entrypoint "" -it wata727/tflint:0.14.0 tflint ./
+
+    # terraform security
+    docker container run --name tfsec --rm -v "$PWD/terraform/:/workdir" -w /workdir --user 1000 -it wesleydeanflexion/tfsec:latest .
+
+    # shell linter
+    docker container run --name shellcheck --rm -v "$PWD/:/mnt" -w /mnt -it koalaman/shellcheck-alpine:stable shellcheck deploy.sh
+
+after_success:
+  - |
+    if [ $TRAVIS_PULL_REQUEST != "false" ]; then
+      docker container run -i --rm \
+        --env GITHUB_TOKEN=$GITHUB_TOKEN \
+        --env GITHUB_OWNER=julio-cesar-development \
+        --env GITHUB_REPO=cncf-project \
+        --env GITHUB_COMMENT_TYPE=pr \
+        --env GITHUB_PR_ISSUE_NUMBER=$TRAVIS_PULL_REQUEST \
+        --env GITHUB_COMMENT_FORMAT="<b>Comment</b><br/>{{.}}" \
+        --env GITHUB_COMMENT="build of commit $SHA was successful, LGTM" \
+        cloudposse/github-commenter:latest
+
+      echo "{\"commit_id\": \"$FULL_SHA\", \"body\": \"Approved\", \"event\": \"APPROVE\"}" > payload.json
+
+      curl \
+        -X POST \
+        -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        https://api.github.com/repos/julio-cesar-development/cncf-project/pulls/$TRAVIS_PULL_REQUEST/reviews \
+        -d "@payload.json"
+    fi
+
+after_failure:
+  - |
+    if [ $TRAVIS_PULL_REQUEST != "false" ]; then
+      docker container run -i --rm \
+        --env GITHUB_TOKEN=$GITHUB_TOKEN \
+        --env GITHUB_OWNER=julio-cesar-development \
+        --env GITHUB_REPO=cncf-project \
+        --env GITHUB_COMMENT_TYPE=pr \
+        --env GITHUB_PR_ISSUE_NUMBER=$TRAVIS_PULL_REQUEST \
+        --env GITHUB_COMMENT_FORMAT="<b>Comment</b><br/>{{.}}" \
+        --env GITHUB_COMMENT="build of commit $SHA was not successful" \
+        cloudposse/github-commenter:latest
+
+      echo "{\"commit_id\": \"$FULL_SHA\", \"body\": \"Approved\", \"event\": \"APPROVE\"}" > payload.json
+
+      curl \
+        -X POST \
+        -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        https://api.github.com/repos/julio-cesar-development/cncf-project/pulls/$TRAVIS_PULL_REQUEST/reviews \
+        -d "@payload.json"
+    fi
+
+# TODO: implement deploy stage
+# deploy:
+#   on:
+#     branch: master
+#   provider: script
+#   script: bash ./deploy.sh
+#   skip_cleanup: true
