@@ -28,6 +28,13 @@ variable "do_size" {
   default = "s-2vcpu-4gb"
 }
 
+variable "do_size_registry" {
+  type        = string
+  description = "Digital Ocean registry instance size"
+  # 4 vCPUs, 8192 Memory
+  default = "s-4vcpu-8gb"
+}
+
 variable "do_kubernetes_master_count" {
   type        = number
   description = "Digital Ocean number of Kubernetes master instances"
