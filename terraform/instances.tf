@@ -3,7 +3,7 @@ resource "digitalocean_droplet" "do-registry-instance" {
   image              = var.do_image
   name               = format("do-registry-instance-%s", var.do_region)
   region             = var.do_region
-  size               = var.do_size
+  size               = var.do_size_registry
   ssh_keys           = var.do_ssh_keys
   private_networking = true
   user_data          = file(format("%s/scripts/user_data.sh", path.module))
