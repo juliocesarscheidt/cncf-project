@@ -62,6 +62,3 @@
   service: name={{ item }} state=started enabled=yes
   with_items:
     - envoy
-
-- name: "Wait some time for envoy service to be up and running"
-  shell: sleep 45

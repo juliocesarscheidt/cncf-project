@@ -11,7 +11,7 @@ docker container run \
     --env AWS_DEFAULT_REGION="{{ lookup('env', 'AWS_DEFAULT_REGION') }}" \
     --entrypoint "" \
     amazon/aws-cli:2.0.20 sh -c \
-    "aws s3 cp s3://blackdevs-aws/terraform/cncf-project/cert.pem ./cert.pem && \
-    aws s3 cp s3://blackdevs-aws/terraform/cncf-project/chain.pem ./chain.pem && \
-    aws s3 cp s3://blackdevs-aws/terraform/cncf-project/fullchain.pem ./fullchain.pem && \
-    aws s3 cp s3://blackdevs-aws/terraform/cncf-project/privkey.pem ./privkey.pem"
+    "aws s3 cp s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/cert.pem ./cert.pem && \
+    aws s3 cp s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/chain.pem ./chain.pem && \
+    aws s3 cp s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/fullchain.pem ./fullchain.pem && \
+    aws s3 cp s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/privkey.pem ./privkey.pem"

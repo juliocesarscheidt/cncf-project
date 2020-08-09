@@ -1,21 +1,21 @@
 # AWS records
 
 # k8s front-proxy
-resource "aws_route53_record" "aws-front-proxy-ns-record" {
-  allow_overwrite = false
-  name            = "k8s.ondo.${var.domain}"
-  ttl             = 30
-  type            = "NS"
-  zone_id         = var.aws_hosted_zone_id
+# resource "aws_route53_record" "aws-front-proxy-ns-record" {
+#   allow_overwrite = false
+#   name            = "k8s.ondo.${var.domain}"
+#   ttl             = 30
+#   type            = "NS"
+#   zone_id         = var.aws_hosted_zone_id
 
-  records = [
-    "ns3.digitalocean.com.",
-    "ns2.digitalocean.com.",
-    "ns1.digitalocean.com.",
-  ]
+#   records = [
+#     "ns3.digitalocean.com.",
+#     "ns2.digitalocean.com.",
+#     "ns1.digitalocean.com.",
+#   ]
 
-  depends_on = [digitalocean_droplet.do-registry-instance]
-}
+#   depends_on = [digitalocean_droplet.do-registry-instance]
+# }
 
 # registry
 resource "aws_route53_record" "aws-registry-ns-record" {
@@ -73,20 +73,20 @@ resource "aws_route53_record" "aws-kubernetes-ns-record-todoapp" {
 # Digital Ocean records
 
 # k8s front proxy
-resource "digitalocean_domain" "do-front-proxy-domain" {
-  name = "k8s.ondo.${var.domain}"
+# resource "digitalocean_domain" "do-front-proxy-domain" {
+#   name = "k8s.ondo.${var.domain}"
 
-  depends_on = [aws_route53_record.aws-front-proxy-ns-record]
-}
+#   depends_on = [aws_route53_record.aws-front-proxy-ns-record]
+# }
 
-resource "digitalocean_record" "do-front-proxy-a-record" {
-  domain = digitalocean_domain.do-front-proxy-domain.name
-  type   = "A"
-  name   = "@"
-  value  = digitalocean_droplet.do-front-proxy-instance.ipv4_address
+# resource "digitalocean_record" "do-front-proxy-a-record" {
+#   domain = digitalocean_domain.do-front-proxy-domain.name
+#   type   = "A"
+#   name   = "@"
+#   value  = digitalocean_droplet.do-front-proxy-instance.ipv4_address
 
-  depends_on = [digitalocean_domain.do-front-proxy-domain]
-}
+#   depends_on = [digitalocean_domain.do-front-proxy-domain]
+# }
 
 # registry
 resource "digitalocean_domain" "do-registry-domain" {

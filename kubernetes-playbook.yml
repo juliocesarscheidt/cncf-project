@@ -15,6 +15,14 @@
   become_user: root
   roles:
     - { role: masters }
+    - { role: wait }
+
+- hosts: masters
+  gather_facts: True
+  remote_user: root
+  become: yes
+  become_user: root
+  roles:
     - { role: contour }
     - { role: linkerd }
     - { role: helm }
@@ -26,8 +34,9 @@
   become_user: root
   roles:
     - { role: nodes }
+    - { role: wait }
 
-# cert-manager needs nodes to be ingressed
+# nodes need to be ingressed first
 - hosts: masters
   gather_facts: True
   remote_user: root
@@ -35,3 +44,6 @@
   become_user: root
   roles:
     - { role: cert-manager }
+    - { role: wait }
+    - { role: cert-manager-deploy }
+    - { role: wait }

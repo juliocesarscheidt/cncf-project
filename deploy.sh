@@ -2,17 +2,22 @@
 
 set -e
 
+export FQDN="${FQDN:-blackdevs.com.br}"
+
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-"sa-east-1"}"
+export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:?"[ERROR] Missing AWS Access Key"}"
+export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:?"[ERROR] Missing AWS Secret Key"}"
+
+# enter into terraform folder
 pushd ./terraform/
 
 # deploy infrastucture with Terraform scripts
 chmod +x ./deploy.sh && \
     bash ./deploy.sh
 
-export FQDN="${FQDN:-blackdevs.com.br}"
-
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-"sa-east-1"}"
-export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:?"[ERROR] Missing AWS Access Key"}"
-export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:?"[ERROR] Missing AWS Secret Key"}"
+# Wait some time
+echo "Waiting for instances to be up and running"
+sleep 45
 
 # generate the inventory with instances from Terraform scripts
 cat <<EOF | tee ../inventory/main.yml
@@ -39,7 +44,7 @@ all:
         registry.ondo.${FQDN}
     front-proxy:
       hosts:
-        k8s.ondo.${FQDN}
+        $(terraform output do-front-proxy-instance-ipv4-address):
 EOF
 
 # generate some password for Harbor if not set
@@ -51,10 +56,7 @@ HARBOR_ADMIN="${HARBOR_ADMIN:-$RANDOM_PASS}"
 
 echo "HARBOR_ADMIN :: ${HARBOR_ADMIN}"
 
-# Wait some time
-echo "Waiting for instances to be up and running"
-sleep 45
-
+# return from terraform folder
 popd
 
 # run the playbooks

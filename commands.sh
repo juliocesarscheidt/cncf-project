@@ -24,8 +24,12 @@ pushd ./terraform/
 
 # terraform fmt -write=true -recursive
 
+# terraform apply -auto-approve
 # terraform refresh
 # terraform destroy -auto-approve
+
+# terraform show
+# terraform graph
 
 
 # access registry
@@ -60,12 +64,19 @@ ssh -i cncf_key root@$(terraform output do-master-instance-ipv4-address-0)
 
 
 # copy certs (registry.ondo.blackdevs.com.br)
-aws s3 cp ./certs/cert.pem s3://blackdevs-aws/terraform/cncf-project/cert.pem
-aws s3 cp ./certs/chain.pem s3://blackdevs-aws/terraform/cncf-project/chain.pem
-aws s3 cp ./certs/fullchain.pem s3://blackdevs-aws/terraform/cncf-project/fullchain.pem
-aws s3 cp ./certs/privkey.pem s3://blackdevs-aws/terraform/cncf-project/privkey.pem
+aws s3 cp ./certs/cert.pem s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/cert.pem
+aws s3 cp ./certs/chain.pem s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/chain.pem
+aws s3 cp ./certs/fullchain.pem s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/fullchain.pem
+aws s3 cp ./certs/privkey.pem s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/privkey.pem
 
-aws s3 ls s3://blackdevs-aws/terraform/cncf-project/
+aws s3 ls s3://blackdevs-aws/terraform/cncf-project/registry.ondo.blackdevs.com.br/
+
+
+aws s3 cp ./terraform.tfvars s3://blackdevs-aws/terraform/cncf-project/terraform.tfvars
+
+
+aws s3 cp ./cncf_key s3://blackdevs-aws/terraform/cncf-project/cncf_key
+aws s3 cp ./cncf_key.pub s3://blackdevs-aws/terraform/cncf-project/cncf_key.pub
 
 
 # remove from known_hosts

@@ -36,8 +36,8 @@ static_resources:
 
   clusters:
     - name: "k8s_cluster_http"
-      connect_timeout: "0.30s"
-      type: "STRICT_DNS"
+      connect_timeout: "30s"
+      type: "strict_dns"
       lb_policy: "LEAST_REQUEST"
       # lb_policy: "ROUND_ROBIN"
       # lb_policy: "RING_HASH"
@@ -45,14 +45,16 @@ static_resources:
       hosts:
 
     {% for host in groups['nodes'] %}
+
       - socket_address:
           address: {{ host }}
           port_value: 80
+
     {% endfor %}
 
     - name: "k8s_cluster_https"
-      connect_timeout: "0.30s"
-      type: "STRICT_DNS"
+      connect_timeout: "30s"
+      type: "strict_dns"
       lb_policy: "LEAST_REQUEST"
       # lb_policy: "ROUND_ROBIN"
       # lb_policy: "RING_HASH"
@@ -60,7 +62,9 @@ static_resources:
       hosts:
 
     {% for host in groups['nodes'] %}
+
       - socket_address:
           address: {{ host }}
           port_value: 443
+
     {% endfor %}
