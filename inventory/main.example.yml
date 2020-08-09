@@ -21,4 +21,4 @@ all:
         registry.ondo.${FQDN}
     front-proxy:
       hosts:
-        k8s.ondo.${FQDN}
+        0.0.0.0:
