@@ -1,5 +1,9 @@
 # CNCF project 🐳🚀
 
+[![Build Status](https://travis-ci.org/julio-cesar-development/cncf-project.svg)](https://travis-ci.org/julio-cesar-development/cncf-project)
+[![GitHub Status](https://badgen.net/github/status/julio-cesar-development/cncf-project)](https://github.com/julio-cesar-development/cncf-project)
+![License](https://badgen.net/badge/license/MIT/blue)
+
 > This is a project to provide a Kubernetes infrastucture using Terraform and Ansible, also a Harbor registry for Docker images.<br>
 > Implemented totally as IAC (Infrastructure as Code)<br>
 > It will be used CNCF (Cloud Native Computing Foundation) projects the whole implementation of this project.<br>

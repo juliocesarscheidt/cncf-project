@@ -20,7 +20,7 @@ env:
 script:
   - |
     # terraform linter
-    docker container run --name tflint --rm -v "$PWD/terraform/:/data" -w /data --entrypoint "" -it wata727/tflint:0.14.0 tflint ./
+    docker container run --name tflint --rm -v "$PWD/terraform/:/data" -w /data --entrypoint "" -it wata727/tflint:0.14.0 tflint .
 
     # terraform security
     docker container run --name tfsec --rm -v "$PWD/terraform/:/workdir" -w /workdir --user 1000 -it wesleydeanflexion/tfsec:latest .
@@ -74,9 +74,9 @@ after_failure:
         -d "@payload.json"
     fi
 
-deploy:
-  on:
-    branch: master
-  provider: script
-  script: bash ./deploy.sh
-  skip_cleanup: true
+# deploy:
+#   on:
+#     branch: master
+#   provider: script
+#   script: bash ./deploy.sh
+#   skip_cleanup: true

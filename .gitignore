@@ -7,3 +7,4 @@
 kubeconfig*
 inventory/main.yml
 certs/
+*.txt

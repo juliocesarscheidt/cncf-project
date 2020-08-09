@@ -19,7 +19,6 @@ chmod +x ./deploy.sh && \
 echo "Waiting for instances to be up and running"
 sleep 45
 
-# generate the inventory with instances from Terraform scripts
 cat <<EOF | tee ../inventory/main.yml
 all:
   vars:

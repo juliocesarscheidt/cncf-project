@@ -24,7 +24,7 @@ fi
 docker container run \
   --name terraform \
   --rm -it \
-  -v "$PWD:/data" \
+  -v "$PWD/:/data" \
   -w /data \
   --env AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
   --env AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
